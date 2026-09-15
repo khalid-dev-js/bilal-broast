@@ -1620,6 +1620,8 @@ function CheckoutPage({
   const [discount, setDiscount] = useState(0);
   const [placing, setPlacing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [orderError, setOrderError] = useState("");
   const checkoutItems = singleItem ? [singleItem] : cart;
   const subtotal = checkoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
   if (placed)
@@ -1639,7 +1641,7 @@ function CheckoutPage({
         <div className="confirm-card">
           <div>
             <span>Order number</span>
-            <strong>#BB-1049</strong>
+            <strong>{orderNumber || "Your order"}</strong>
           </div>
           <div>
             <span>Delivering to</span>
@@ -1685,27 +1687,33 @@ function CheckoutPage({
             className="checkout-form"
             onSubmit={async (e) => {
               e.preventDefault();
+              setOrderError("");
               setPlacing(true);
-              await new Promise((resolve) => setTimeout(resolve, 700));
-              const savedOrders = JSON.parse(
-                window.localStorage.getItem("bilal-broast-orders") || "[]",
-              );
-              savedOrders.unshift({
-                id: `BB-${Date.now().toString().slice(-6)}`,
-                createdAt: new Date().toISOString(),
-                items: checkoutItems,
-                paymentMethod,
-                subtotal,
-                total: subtotal + (subtotal >= 1500 ? 0 : 150),
-                status: "Preparing",
-              });
-              window.localStorage.setItem(
-                "bilal-broast-orders",
-                JSON.stringify(savedOrders),
-              );
-              setPlaced(true);
-              setPlacing(false);
-              if (!singleItem) clearCart();
+              try {
+                const form = new FormData(e.currentTarget);
+                const created = await api.post<any>("/orders", {
+                  items: checkoutItems.map((item) => ({
+                    productId: item.slug || item.id,
+                    quantity: item.quantity,
+                  })),
+                  deliveryAddress: {
+                    fullName: String(form.get("name") || ""),
+                    phone: String(form.get("phone") || ""),
+                    address: String(form.get("house") || ""),
+                    area: String(form.get("street") || ""),
+                    city: String(form.get("city") || ""),
+                    notes: String(form.get("notes") || ""),
+                  },
+                  paymentMethod,
+                });
+                setOrderNumber(created?.orderNumber || created?._id || "");
+                setPlaced(true);
+                if (!singleItem) clearCart();
+              } catch (error) {
+                setOrderError(error instanceof Error ? error.message : "Unable to place your order.");
+              } finally {
+                setPlacing(false);
+              }
             }}
           >
             <section className="form-section">
@@ -1717,15 +1725,15 @@ function CheckoutPage({
               <div className="form-grid">
                 <label>
                   Full name <span className="field-required">Required</span>
-                  <input required placeholder="e.g. Ayesha Khan" />
+                  <input required name="name" placeholder="e.g. Ayesha Khan" />
                 </label>
                 <label>
                   Phone number <span className="field-required">Required</span>
-                  <input required type="tel" placeholder="03XX XXXXXXX" />
+                  <input required name="phone" type="tel" placeholder="03XX XXXXXXX" />
                 </label>
                 <label className="wide">
                   Email address <span className="field-optional">Optional</span>
-                  <input type="email" placeholder="you@example.com" />
+                  <input name="email" type="email" placeholder="you@example.com" />
                 </label>
               </div>
             </section>
@@ -1738,19 +1746,20 @@ function CheckoutPage({
               <div className="form-grid">
                 <label className="wide">
                   House / shop / building
-                  <input required placeholder="e.g. House 14, Street 6" />
+                  <input required name="house" placeholder="e.g. House 14, Street 6" />
                 </label>
                 <label>
                   Street / area
-                  <input required placeholder="e.g. Gulberg III" />
+                  <input required name="street" placeholder="e.g. Gulberg III" />
                 </label>
                 <label>
                   City
-                  <input required defaultValue="Lahore" />
+                  <input required name="city" defaultValue="Lahore" />
                 </label>
                 <label className="wide">
                   Additional instructions <span>(optional)</span>
                   <textarea
+                    name="notes"
                     placeholder="Landmark, floor, delivery notes..."
                     rows={3}
                   />
@@ -1783,6 +1792,7 @@ function CheckoutPage({
               </div>
               <p className="payment-note"><Check size={14} /> Your payment details are handled securely.</p>
             </section>
+            {orderError && <p className="checkout-submit-error" role="alert">{orderError}</p>}
             <button
               className="button button-primary full-button submit-order"
               type="submit"

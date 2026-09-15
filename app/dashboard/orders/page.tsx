@@ -10,6 +10,7 @@ type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'out_for_de
 type SortOption = 'newest' | 'oldest' | 'total_high' | 'total_low' | 'name_asc' | 'name_desc'
 type AdminOrder = {
 	id: string
+	backendId: string
 	customerName: string
 	phone: string
 	address: string
@@ -28,7 +29,7 @@ const statusOptions: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'read
 const sortLabels: Record<SortOption, string> = { newest: 'Newest first', oldest: 'Oldest first', total_high: 'Highest amount', total_low: 'Lowest amount', name_asc: 'Customer A-Z', name_desc: 'Customer Z-A' }
 
 function mapOrder(raw: any): AdminOrder {
-	return { id: raw.orderNumber || raw._id || raw.id, customerName: raw.customerSnapshot?.name || raw.customer?.name || raw.customerName || 'Customer', phone: raw.customerSnapshot?.phone || raw.customer?.phone || raw.phone || 'No phone provided', address: raw.deliveryAddress?.address || raw.address || 'Pickup order', deliveryInstructions: raw.deliveryAddress?.notes || raw.deliveryInstructions || '', status: raw.orderStatus || raw.status || 'pending', total: Number(raw.grandTotal ?? raw.total ?? 0), subtotal: Number(raw.subtotal ?? raw.grandTotal ?? raw.total ?? 0), deliveryFee: Number(raw.deliveryFee ?? 0), paymentMethod: raw.paymentMethod || 'cod', createdAt: raw.createdAt || raw.created_at || new Date().toISOString(), items: (raw.items || []).map((item: any) => ({ name: item.name || item.product?.name || 'Item', quantity: Number(item.quantity || 1), price: Number(item.price ?? item.priceSnapshot ?? 0) })) }
+	return { id: raw.orderNumber || raw._id || raw.id, backendId: raw._id || raw.id || raw.orderNumber, customerName: raw.customerSnapshot?.name || raw.customer?.name || raw.customerName || 'Customer', phone: raw.customerSnapshot?.phone || raw.customer?.phone || raw.phone || 'No phone provided', address: raw.deliveryAddress?.address || raw.address || 'Pickup order', deliveryInstructions: raw.deliveryAddress?.notes || raw.deliveryInstructions || '', status: raw.orderStatus || raw.status || 'pending', total: Number(raw.grandTotal ?? raw.total ?? 0), subtotal: Number(raw.subtotal ?? raw.grandTotal ?? raw.total ?? 0), deliveryFee: Number(raw.deliveryFee ?? 0), paymentMethod: raw.paymentMethod || 'cod', createdAt: raw.createdAt || raw.created_at || new Date().toISOString(), items: (raw.items || []).map((item: any) => ({ name: item.name || item.product?.name || item.nameSnapshot || 'Item', quantity: Number(item.quantity || 1), price: Number(item.price ?? item.priceSnapshot ?? 0) })) }
 }
 
 function dateKey(value: string) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` }
@@ -66,7 +67,7 @@ export default function DashboardOrdersPage() {
 	function clearFilters() { setQuery(''); setSelectedDate(''); setDateFrom(''); setDateTo(''); setStatus('all'); setSort('newest') }
 	function selectDate(date: Date) { setSelectedDate(dateKey(date.toISOString())); setDateFrom(''); setDateTo(''); setCalendarOpen(false) }
 	function quickDate(kind: 'today' | 'yesterday' | 'week' | 'month') { const today = new Date(); if (kind === 'today') selectDate(today); else if (kind === 'yesterday') { today.setDate(today.getDate() - 1); selectDate(today) } else { const start = new Date(today); if (kind === 'week') start.setDate(today.getDate() - 6); else start.setDate(1); setSelectedDate(''); setDateFrom(dateKey(start.toISOString())); setDateTo(dateKey(today.toISOString())); setCalendarOpen(false) } }
-	async function changeStatus(order: AdminOrder, nextStatus: OrderStatus) { if (nextStatus === order.status) return; try { const result = await api.patch<any>(`/admin/orders/${order.id}/status`, { orderStatus: nextStatus }); const updated = mapOrder(result?.order || result); setOrders((current) => current.map((item) => item.id === order.id ? updated : item)); setSelectedOrder((current) => current?.id === order.id ? updated : current) } catch { setError('That status change is not allowed for this order.') } }
+	async function changeStatus(order: AdminOrder, nextStatus: OrderStatus) { if (nextStatus === order.status) return; try { const result = await api.patch<any>(`/admin/orders/${order.backendId}/status`, { orderStatus: nextStatus }); const updated = mapOrder(result?.order || result); setOrders((current) => current.map((item) => item.id === order.id ? updated : item)); setSelectedOrder((current) => current?.id === order.id ? updated : current) } catch { setError('That status change is not allowed for this order.') } }
 
 	return <DashboardShell title="Orders" description="Review incoming orders and keep the kitchen moving.">
 		<section className="orders-dashboard">
