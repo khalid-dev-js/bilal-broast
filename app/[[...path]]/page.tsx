@@ -1619,6 +1619,7 @@ function CheckoutPage({
   const [promo, setPromo] = useState("");
   const [discount, setDiscount] = useState(0);
   const [placing, setPlacing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
   const checkoutItems = singleItem ? [singleItem] : cart;
   const subtotal = checkoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
   if (placed)
@@ -1693,6 +1694,7 @@ function CheckoutPage({
                 id: `BB-${Date.now().toString().slice(-6)}`,
                 createdAt: new Date().toISOString(),
                 items: checkoutItems,
+                paymentMethod,
                 subtotal,
                 total: subtotal + (subtotal >= 1500 ? 0 : 150),
                 status: "Preparing",
@@ -1763,18 +1765,21 @@ function CheckoutPage({
               </div>
               <div className="payment-select-wrap checkout-payment-card">
                 <span className="payment-card-icon"><ShoppingBag size={16} /></span>
-                <span className="payment-card-copy"><strong>Cash on delivery</strong><small>Pay when your fresh order arrives</small></span>
-                <select
-                  className="payment-select"
-                  id="payment-method"
-                  name="paymentMethod"
-                  defaultValue="cod"
-                  aria-label="Choose payment method"
-                >
-                  <option value="cod">Cash on delivery</option>
-                  <option value="online">Online payment</option>
-                </select>
-                <ChevronDown size={17} aria-hidden="true" />
+                <span className="payment-card-copy"><strong>{paymentMethod === "cod" ? "Cash on delivery" : "Online payment"}</strong><small>{paymentMethod === "cod" ? "Pay when your fresh order arrives" : "Pay securely online"}</small></span>
+                <span className="payment-select-control">
+                  <select
+                    className="payment-select"
+                    id="payment-method"
+                    name="paymentMethod"
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value as "cod" | "online")}
+                    aria-label="Choose payment method"
+                  >
+                    <option value="cod">Cash on delivery</option>
+                    <option value="online">Online payment</option>
+                  </select>
+                  <ChevronDown size={17} aria-hidden="true" />
+                </span>
               </div>
               <p className="payment-note"><Check size={14} /> Your payment details are handled securely.</p>
             </section>
@@ -1900,7 +1905,7 @@ function ContactPage() {
       <div className="contact-grid">
         <div className="contact-details">
           <div className="contact-detail-card">
-            <MapPin />
+            <span className="contact-detail-icon" aria-hidden="true"><MapPin size={19} /></span>
             <span>
               <small>Visit us</small>
               <h3>Jamshed Quarters, Karachi</h3>
@@ -1909,7 +1914,7 @@ function ContactPage() {
             <ArrowUpRight size={16} />
           </div>
           <div className="contact-detail-card">
-            <Phone />
+            <span className="contact-detail-icon" aria-hidden="true"><Phone size={19} /></span>
             <span>
               <small>Call us</small>
               <h3>{restaurant.phone}</h3>
@@ -1918,7 +1923,7 @@ function ContactPage() {
             <ArrowUpRight size={16} />
           </div>
           <div className="contact-detail-card">
-            <Clock3 />
+            <span className="contact-detail-icon" aria-hidden="true"><Clock3 size={19} /></span>
             <span>
               <small>Open daily</small>
               <h3>{restaurant.hours}</h3>
