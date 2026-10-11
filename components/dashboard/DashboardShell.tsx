@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { BarChart3, ClipboardList, LayoutDashboard, LogOut, Menu, Package, Settings, X } from 'lucide-react'
 import { useState } from 'react'
 import { Logo } from '@/components/layout/Logo'
+import { PushNotificationControl } from '@/components/dashboard/PushNotificationControl'
 import { api } from '@/lib/api/client'
 import { disconnectSocket } from '@/lib/api/socket'
 import { useRouter } from 'next/navigation'
@@ -28,6 +29,6 @@ export function DashboardShell({ children, title, description }: { children: Rea
       <nav className="dashboard-nav">{links.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setOpen(false)}><Icon size={17} />{label}</Link>)}</nav>
       <div className="dashboard-account"><div className="admin-avatar">AB</div><div><strong>Admin account</strong><span>Restaurant manager</span></div><button aria-label="Log out" onClick={handleLogout}><LogOut size={16} /></button></div>
     </aside>
-    <main className="dashboard-main"><header className="dashboard-header"><button className="dashboard-menu" onClick={() => setOpen(true)} aria-label="Open dashboard menu"><Menu size={21} /></button><div><span className="dashboard-eyebrow">Bilal Broast / Admin</span><h1>{title}</h1><p>{description}</p></div><Link href="/" className="dashboard-view-site">View site</Link></header>{children}</main>
+    <main className="dashboard-main"><header className="dashboard-header"><button className="dashboard-menu" onClick={() => setOpen(true)} aria-label="Open dashboard menu"><Menu size={21} /></button><div><span className="dashboard-eyebrow">Bilal Broast / Admin</span><h1>{title}</h1><p>{description}</p></div><div style={{ marginLeft: 'auto', display: 'grid', justifyItems: 'end', gap: 8 }}><PushNotificationControl /><Link href="/" className="dashboard-view-site" style={{ marginLeft: 0 }}>View site</Link></div></header>{children}</main>
   </div>
 }

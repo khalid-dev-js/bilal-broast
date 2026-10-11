@@ -2,8 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import broastSandwichImage from "@/assets/IMG-20261007-WA0040.jpg";
+import chickenAndFriesImage from "@/assets/IMG-20261007-WA0041.jpg";
+import burgerImage from "@/assets/IMG-20261007-WA0042.jpg";
+import broastPlatterImage from "@/assets/IMG-20261007-WA0043.jpg";
+import shawarmaImage from "@/assets/IMG-20261007-WA0044.jpg";
+import grilledChickenImage from "@/assets/IMG-20261007-WA0045.jpg";
+import muttonPlatterImage from "@/assets/IMG-20261007-WA0046.jpg";
+import broastDrumstickImage from "@/assets/IMG-20261007-WA0047.jpg";
+import hunterBeefTinsImage from "@/assets/IMG-20261007-WA0048.jpg";
+import pressedHunterBeefSpicyImage from "@/assets/IMG-20261007-WA0049.jpg";
+import pressedHunterBeefImage from "@/assets/IMG-20261007-WA0050.jpg";
+import hunterBeefImage from "@/assets/IMG-20261007-WA0051.jpg";
+import hunterChickenImage from "@/assets/IMG-20261007-WA0052.jpg";
+import hunterChickenSaltAndPepperImage from "@/assets/IMG-20261007-WA0053.jpg";
+import hunterChickenSaltAndPepperProductImage from "@/assets/IMG-20261007-WA0054.jpg";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -48,6 +63,72 @@ import { api } from "@/lib/api/client";
 
 const BRAND = "#922f27";
 
+const homeCategoryImages: Record<string, typeof broastPlatterImage> = {
+  broast: broastPlatterImage,
+  burgers: burgerImage,
+  chicken: chickenAndFriesImage,
+  fries: chickenAndFriesImage,
+  deals: broastSandwichImage,
+  drinks: shawarmaImage,
+  meat: hunterBeefTinsImage,
+  mutton: muttonPlatterImage,
+  shawarma: shawarmaImage,
+};
+
+const homeProductImages = [
+  broastSandwichImage,
+  chickenAndFriesImage,
+  burgerImage,
+  broastPlatterImage,
+  shawarmaImage,
+  grilledChickenImage,
+  muttonPlatterImage,
+  broastDrumstickImage,
+  hunterBeefTinsImage,
+  pressedHunterBeefSpicyImage,
+  pressedHunterBeefImage,
+  hunterBeefImage,
+  hunterChickenImage,
+  hunterChickenSaltAndPepperImage,
+  hunterChickenSaltAndPepperProductImage,
+];
+
+function getHomeCategoryImage(category: string) {
+  return (
+    homeCategoryImages[category.trim().toLowerCase()] ||
+    broastPlatterImage
+  );
+}
+
+function getHomeProductImage(product: Product, index: number) {
+  const name = product.name.toLowerCase();
+  if (name.includes("hunter chicken") && name.includes("salt")) {
+    return hunterChickenSaltAndPepperProductImage;
+  }
+  if (name.includes("hunter chicken")) return hunterChickenImage;
+  if (name.includes("smoke hunter beef")) return pressedHunterBeefSpicyImage;
+  if (name.includes("hunter beef")) return hunterBeefImage;
+  const categoryImage = homeCategoryImages[product.category.trim().toLowerCase()];
+  return categoryImage || homeProductImages[index % homeProductImages.length];
+}
+
+type SessionUser = { role?: string } | null;
+
+let sessionUserRequest: Promise<SessionUser> | null = null;
+
+function getSessionUser() {
+  if (!sessionUserRequest) {
+    sessionUserRequest = api
+      .get<any>("/auth/me")
+      .then((response) => {
+        const user = response?.user || response?.data?.user || response?.data || response;
+        return user?.id || user?._id || user?.email ? user : null;
+      })
+      .catch(() => null);
+  }
+  return sessionUserRequest;
+}
+
 function Logo({ light = false }: { light?: boolean }) {
   return (
     <Link
@@ -55,11 +136,13 @@ function Logo({ light = false }: { light?: boolean }) {
       className={`brand-logo ${light ? "brand-logo-light" : ""}`}
       aria-label="Bilal Broast home"
     >
-      <span className="brand-mark">BB</span>
-      <span>
-        <strong>Bilal</strong>
-        <em>Broast</em>
-      </span>
+      <Image
+        src="/bilal-broast-brand.png"
+        alt="Bilal Broast"
+        width={160}
+        height={106}
+        className="brand-logo-image"
+      />
     </Link>
   );
 }
@@ -93,21 +176,18 @@ function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<{ role?: string } | null>(null);
   useEffect(() => {
-    api
-      .get<any>("/auth/me")
-      .then((response) => {
-        const currentUser =
-          response?.user || response?.data?.user || response?.data || response;
-        setUser(
-          currentUser?.id || currentUser?._id || currentUser?.email
-            ? currentUser
-            : null,
-        );
-      })
-      .catch(() => setUser(null));
-  }, []);
+    if (!sessionUserRequest && pathname !== "/") return;
+    let active = true;
+    getSessionUser().then((currentUser) => {
+      if (active) setUser(currentUser);
+    });
+    return () => {
+      active = false;
+    };
+  }, [pathname]);
   async function logout() {
     await api.post("/auth/logout").catch(() => undefined);
+    sessionUserRequest = Promise.resolve(null);
     setUser(null);
     window.location.href = "/login";
   }
@@ -295,49 +375,6 @@ function Footer() {
   );
 }
 
-function LoginRequiredModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div className="login-modal-backdrop" role="presentation" onClick={onClose}>
-      <section
-        className="login-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="login-modal-title"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          className="login-modal-close"
-          onClick={onClose}
-          aria-label="Close login dialog"
-        >
-          <X size={18} />
-        </button>
-        <div className="login-modal-icon">
-          <ShoppingBag size={24} />
-        </div>
-        <span className="eyebrow">Member checkout</span>
-        <h2 id="login-modal-title">Login to add to cart.</h2>
-        <p>
-          Sign in to save your cart and continue with a smoother checkout
-          experience.
-        </p>
-        <div className="login-modal-actions">
-          <button className="button button-outline" onClick={onClose}>
-            Cancel
-          </button>
-          <Link
-            href="/login"
-            className="button button-primary"
-            onClick={onClose}
-          >
-            Login to continue <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 function ProductCard({
   product,
   onAdd,
@@ -497,7 +534,34 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
       cta: "Explore menu",
     },
   ];
+  const galleryItems = [
+    { name: "Crispy Broast Platter", href: "/menu", image: broastPlatterImage },
+    {
+      name: products[1].name,
+      href: `/menu/${products[1].slug}`,
+      image: burgerImage,
+    },
+    {
+      name: "Chicken Fillet with Fries",
+      href: "/menu",
+      image: chickenAndFriesImage,
+    },
+    { name: "Shawarma", href: "/menu", image: shawarmaImage },
+    {
+      name: "Grilled Chicken Platter",
+      href: "/menu",
+      image: grilledChickenImage,
+    },
+    {
+      name: "Mutton Platter",
+      href: "/menu",
+      image: muttonPlatterImage,
+    },
+  ];
   const [active, setActive] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [featuredProductsLoading, setFeaturedProductsLoading] = useState(true);
+  const [featuredProductsError, setFeaturedProductsError] = useState(false);
   useEffect(() => {
     const timer = window.setInterval(
       () => setActive((current) => (current + 1) % slides.length),
@@ -505,6 +569,43 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
     );
     return () => window.clearInterval(timer);
   }, [slides.length]);
+  useEffect(() => {
+    let isCurrent = true;
+    api
+      .get<any>("/products?page=1&limit=100")
+      .then((response) => {
+        const items = Array.isArray(response)
+          ? response
+          : response?.products ||
+            response?.items ||
+            response?.results ||
+            response?.data?.products;
+        if (!Array.isArray(items)) {
+          throw new Error("Menu products response is invalid");
+        }
+        const seenCategories = new Set<string>();
+        const highlights = items
+          .map(normalizeProduct)
+          .filter((product) => {
+            const category = product.category.trim().toLowerCase();
+            if (!category || seenCategories.has(category)) return false;
+            seenCategories.add(category);
+            return true;
+          })
+          .slice(0, 3);
+        if (isCurrent) setFeaturedProducts(highlights);
+      })
+      .catch((error) => {
+        console.error("Unable to load homepage menu highlights", error);
+        if (isCurrent) setFeaturedProductsError(true);
+      })
+      .finally(() => {
+        if (isCurrent) setFeaturedProductsLoading(false);
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
   const slide = slides[active];
   return (
     <>
@@ -587,7 +688,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
                 key={category.name}
               >
                 <Image
-                  src={category.image}
+                  src={getHomeCategoryImage(category.name)}
                   alt={category.name}
                   fill
                   sizes="(max-width: 640px) 75vw, 32vw"
@@ -615,9 +716,24 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
             </Link>
           </div>
           <div className="favorite-grid">
-            {popularProducts.map((product) => (
-              <ProductCard product={product} onAdd={onAdd} key={product.id} />
-            ))}
+            {featuredProductsLoading ? (
+              <p role="status">Loading menu highlights...</p>
+            ) : featuredProductsError ? (
+              <p role="alert">Menu highlights could not be loaded right now.</p>
+            ) : featuredProducts.length ? (
+              featuredProducts.map((product, index) => (
+                <ProductCard
+                  product={{
+                    ...product,
+                    image: getHomeProductImage(product, index),
+                  }}
+                  onAdd={onAdd}
+                  key={product.id}
+                />
+              ))
+            ) : (
+              <p>No menu products are available right now.</p>
+            )}
           </div>
         </section>
         <section className="campaign campaign-feast">
@@ -635,7 +751,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
           </div>
           <div className="campaign-photo">
             <Image
-              src={products[3].image}
+              src={broastPlatterImage}
               alt="Family feast with chicken and sides"
               fill
               sizes="55vw"
@@ -649,7 +765,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
         <section className="home-section story-editorial">
           <div className="story-visual">
             <Image
-              src="https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=1200&q=90"
+              src={grilledChickenImage}
               alt="Fresh chicken prepared for the grill"
               fill
               sizes="45vw"
@@ -687,7 +803,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
             </Link>
           </div>
           <Image
-            src="https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1500&q=90"
+            src={broastDrumstickImage}
             alt="Crispy chicken wings"
             fill
             sizes="55vw"
@@ -706,26 +822,20 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
             <p>Fresh from the kitchen. Straight to your cravings.</p>
           </div>
           <div className="food-gallery">
-            {[
-              products[0],
-              products[1],
-              products[4],
-              products[5],
-              products[6],
-            ].map((product, index) => (
+            {galleryItems.map((item, index) => (
               <Link
-                href={`/menu/${product.slug}`}
+                href={item.href}
                 className={`gallery-tile tile-${index + 1}`}
-                key={product.id}
+                key={item.name}
               >
                 <Image
-                  src={product.image}
-                  alt={product.name}
+                  src={item.image}
+                  alt={item.name}
                   fill
                   sizes="(max-width: 640px) 50vw, 30vw"
                 />
                 <span>
-                  {product.name} <ArrowUpRight size={15} />
+                  {item.name} <ArrowUpRight size={15} />
                 </span>
               </Link>
             ))}
@@ -1619,9 +1729,10 @@ function CheckoutPage({
   const [promo, setPromo] = useState("");
   const [discount, setDiscount] = useState(0);
   const [placing, setPlacing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const [paymentMethod, setPaymentMethod] = useState<"" | "cod" | "online">("");
   const [orderNumber, setOrderNumber] = useState("");
   const [orderError, setOrderError] = useState("");
+  const [deliverySummary, setDeliverySummary] = useState("");
   const checkoutItems = singleItem ? [singleItem] : cart;
   const subtotal = checkoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
   if (placed)
@@ -1645,7 +1756,7 @@ function CheckoutPage({
           </div>
           <div>
             <span>Delivering to</span>
-            <strong>Gulberg III, Lahore</strong>
+            <strong>{deliverySummary}</strong>
           </div>
           <div>
             <span>Order total</span>
@@ -1704,9 +1815,13 @@ function CheckoutPage({
                     city: String(form.get("city") || ""),
                     notes: String(form.get("notes") || ""),
                   },
+                  email: String(form.get("email") || ""),
                   paymentMethod,
                 });
                 setOrderNumber(created?.orderNumber || created?._id || "");
+                setDeliverySummary(
+                  `${String(form.get("name") || "")} · ${String(form.get("house") || "")}, ${String(form.get("street") || "")}, ${String(form.get("city") || "")}`,
+                );
                 setPlaced(true);
                 if (!singleItem) clearCart();
               } catch (error) {
@@ -1769,21 +1884,23 @@ function CheckoutPage({
             <section className="form-section">
               <div className="checkout-section-heading">
                 <span className="checkout-section-number">03</span>
-                <div><h3>Payment method</h3><p>Secure and simple checkout.</p></div>
+                <div><h3>Payment method <span className="field-required">Required</span></h3><p>Choose how you would like to pay.</p></div>
                 <ShoppingBag size={19} />
               </div>
               <div className="payment-select-wrap checkout-payment-card">
                 <span className="payment-card-icon"><ShoppingBag size={16} /></span>
-                <span className="payment-card-copy"><strong>{paymentMethod === "cod" ? "Cash on delivery" : "Online payment"}</strong><small>{paymentMethod === "cod" ? "Pay when your fresh order arrives" : "Pay securely online"}</small></span>
+                <span className="payment-card-copy"><strong>{paymentMethod === "cod" ? "Cash on delivery" : paymentMethod === "online" ? "Online payment" : "Select a payment method"}</strong><small>{paymentMethod === "cod" ? "Pay when your fresh order arrives" : paymentMethod === "online" ? "Pay securely online" : "Choose an option to continue"}</small></span>
                 <span className="payment-select-control">
                   <select
                     className="payment-select"
                     id="payment-method"
                     name="paymentMethod"
+                    required
                     value={paymentMethod}
-                    onChange={(event) => setPaymentMethod(event.target.value as "cod" | "online")}
-                    aria-label="Choose payment method"
+                    onChange={(event) => setPaymentMethod(event.target.value as "" | "cod" | "online")}
+                    aria-label="Choose payment method (required)"
                   >
+                    <option value="" disabled>Select payment</option>
                     <option value="cod">Cash on delivery</option>
                     <option value="online">Online payment</option>
                   </select>
@@ -2973,10 +3090,8 @@ export default function App() {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartHydrated, setCartHydrated] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const path = typeof window !== "undefined" ? window.location.pathname : "/";
+  const path = usePathname();
+  const searchParams = useSearchParams();
   useEffect(() => {
     const saved = window.localStorage.getItem("bilal-broast-cart");
     if (saved) {
@@ -2993,24 +3108,6 @@ export default function App() {
       window.localStorage.setItem("bilal-broast-cart", JSON.stringify(cart));
     }
   }, [cart, cartHydrated]);
-  useEffect(() => {
-    api
-      .get<any>("/auth/me")
-      .then((response) => {
-        const currentUser =
-          response?.user || response?.data?.user || response?.data || response;
-        setAuthenticated(
-          Boolean(
-            currentUser?.id ||
-            currentUser?._id ||
-            currentUser?.userId ||
-            currentUser?.email,
-          ),
-        );
-      })
-      .catch(() => setAuthenticated(false))
-      .finally(() => setAuthChecked(true));
-  }, []);
   useEffect(() => {
     document.body.classList.toggle("cart-drawer-open", drawerOpen);
     return () => document.body.classList.remove("cart-drawer-open");
@@ -3050,16 +3147,7 @@ export default function App() {
     return true;
   };
   let content: React.ReactNode;
-  if (!authChecked)
-    content = (
-      <main className="page-main history-page">
-        <div className="history-state">
-          <div className="history-spinner" />
-          <p>Checking your account...</p>
-        </div>
-      </main>
-    );
-  else if (path === "/menu") content = <MenuPage onAdd={add} canAdd={canAdd} />;
+  if (path === "/menu") content = <MenuPage onAdd={add} canAdd={canAdd} />;
   else if (path.startsWith("/menu/"))
     content = (
       <DynamicProductPage
@@ -3079,11 +3167,8 @@ export default function App() {
   else if (path === "/order-history")
     content = <OrderHistoryDashboard orders={[]} updateCart={update} />;
   else if (path === "/checkout") {
-    const params = new URLSearchParams(
-      typeof window !== "undefined" ? window.location.search : "",
-    );
-    const quantity = Math.max(1, Number(params.get("quantity") || 1));
-    const productSlug = params.get("product");
+    const quantity = Math.max(1, Number(searchParams.get("quantity") || 1));
+    const productSlug = searchParams.get("product");
     content = productSlug ? (
       <DynamicCheckoutPage
         slug={productSlug}
@@ -3108,9 +3193,6 @@ export default function App() {
       <Navbar cartCount={cartCount} onCart={() => setDrawerOpen(true)} />
       {content}
       {path !== "/getLiveOrder" && <Footer />}
-      {loginModalOpen && (
-        <LoginRequiredModal onClose={() => setLoginModalOpen(false)} />
-      )}
       {drawerOpen && (
         <CartDrawer
           cart={cart}

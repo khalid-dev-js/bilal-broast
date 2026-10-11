@@ -11,21 +11,8 @@ export const metadata: Metadata = {
   description: 'Big, bold Pakistani flavor made fresh to order. Order Bilal Broast online in Karachi.',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/bilal-broast-icon.png',
+    apple: '/bilal-broast-icon.png',
   },
 }
 

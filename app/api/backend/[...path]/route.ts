@@ -8,6 +8,7 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   const headers = new Headers(request.headers)
   headers.delete('host')
   headers.delete('connection')
+  headers.delete('origin')
   const response = await fetch(target, { method: request.method, headers, body: request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer(), cache: 'no-store' })
   const body = await response.text()
   return new NextResponse(body, {
