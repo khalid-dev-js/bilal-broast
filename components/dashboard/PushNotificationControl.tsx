@@ -16,6 +16,14 @@ function decodeApplicationServerKey(key: string): Uint8Array {
   return Uint8Array.from(raw, (character) => character.charCodeAt(0))
 }
 
+function hasCurrentApplicationServerKey(subscription: PushSubscription): boolean {
+  const existingKey = subscription.options.applicationServerKey
+  if (!existingKey) return false
+  const actual = new Uint8Array(existingKey)
+  const expected = decodeApplicationServerKey(vapidPublicKey)
+  return actual.length === expected.length && actual.every((byte, index) => byte === expected[index])
+}
+
 export function PushNotificationControl() {
   const [support, setSupport] = useState<SupportState>('checking')
   const [enabled, setEnabled] = useState(false)
@@ -47,7 +55,10 @@ export function PushNotificationControl() {
     setPermission(Notification.permission)
     navigator.serviceWorker.getRegistration('/')
       .then((registration) => registration?.pushManager.getSubscription())
-      .then((subscription) => setEnabled(Notification.permission === 'granted' && Boolean(subscription)))
+      .then((subscription) => setEnabled(
+        Notification.permission === 'granted'
+        && Boolean(subscription && hasCurrentApplicationServerKey(subscription)),
+      ))
       .catch((error: unknown) => {
         console.error('[push] Unable to inspect this device subscription', error)
         setMessage('Could not check this device. Try reloading the dashboard.')
@@ -72,8 +83,13 @@ export function PushNotificationControl() {
       }
 
       const registration = await navigator.serviceWorker.register('/push-sw.js', { scope: '/' })
-      const subscription = await registration.pushManager.getSubscription()
-        || await registration.pushManager.subscribe({
+      let subscription = await registration.pushManager.getSubscription()
+      if (subscription && !hasCurrentApplicationServerKey(subscription)) {
+        await api.delete('/admin/push-subscriptions', { endpoint: subscription.endpoint })
+        await subscription.unsubscribe()
+        subscription = null
+      }
+      subscription ||= await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: decodeApplicationServerKey(vapidPublicKey) as BufferSource,
         })
