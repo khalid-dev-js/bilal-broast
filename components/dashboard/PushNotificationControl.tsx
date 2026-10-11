@@ -6,7 +6,8 @@ import { api } from '@/lib/api/client'
 
 type SupportState = 'checking' | 'supported' | 'unsupported'
 
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+// VAPID public keys are designed to be public; the matching private key stays backend-only.
+const vapidPublicKey = 'BGoOOhXIBlEwEOh_6IBdiN_2nJLWhKxd2FGpUaw_adHHpjiCyeDRQpUo3k8TWwK78murmIRi1elC87B6KTMUF9A'
 
 function decodeApplicationServerKey(key: string): Uint8Array {
   const padding = '='.repeat((4 - (key.length % 4)) % 4)
