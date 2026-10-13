@@ -4,6 +4,9 @@ export type Product = {
   name: string
   description: string
   price: number
+  websitePrice?: number
+  posPrice?: number
+  onlineOrderPrice?: number
   originalPrice?: number
   category: string
   image: string

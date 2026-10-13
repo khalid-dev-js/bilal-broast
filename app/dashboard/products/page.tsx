@@ -15,16 +15,32 @@ type DashboardProduct = {
   category?: string
   image: string
   price: number
+  websitePrice?: number
+  posPrice?: number
+  onlineOrderPrice?: number
   originalPrice?: number
 }
 
 function normalizeProduct(item: any): DashboardProduct {
+  const websitePrice = Number(item.websitePrice ?? item.price ?? 0)
+  const posPrice = Number(item.posPrice ?? websitePrice)
+  const onlineOrderPrice = Number(item.onlineOrderPrice ?? websitePrice)
+
   return {
     ...item,
     id: item._id || item.id,
     category: typeof item.category === 'object' ? item.category?.name : item.category,
+    price: websitePrice,
+    websitePrice,
+    posPrice,
+    onlineOrderPrice,
     image: item.image || item.imageUrl || item.images?.[0] || '/placeholder.svg',
   }
+}
+
+function priceLabel(value?: number) {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) && numericValue > 0 ? formatPrice(numericValue) : '—'
 }
 
 export default function ProductsPage() {
@@ -65,7 +81,7 @@ export default function ProductsPage() {
   return <DashboardShell title="Products" description="Manage the items guests see on your menu.">
     {notice && <div className={`dashboard-toast dashboard-toast-${notice.type}`} role="status"><span>{notice.type === 'success' ? 'Done' : 'Error'}</span><strong>{notice.message}</strong><button type="button" onClick={() => setNotice(null)} aria-label="Dismiss notification"><X size={15} /></button></div>}
     <div className="products-toolbar"><input placeholder="Search products" value={query} onChange={(event) => setQuery(event.target.value)} /><select value={category} onChange={(event) => setCategory(event.target.value)}><option>All</option>{categories.map((item) => <option key={item.name}>{item.name}</option>)}</select><Link href="/dashboard/products/new" className="button button-primary"><Plus size={16} /> Add product</Link></div>
-    {loading ? <div className="editor-card">Loading products...</div> : visible.length ? <div className="admin-product-list">{visible.map((product) => <article className="admin-product" key={product.id}><div className="admin-thumb"><Image src={product.image} alt={product.name} fill sizes="80px" /></div><div className="admin-product-copy"><span>{product.category || 'Uncategorized'}</span><h2>{product.name}</h2><p>{product.description}</p></div><div className="admin-product-price"><strong>{formatPrice(product.price)}</strong>{product.originalPrice && <del>{formatPrice(product.originalPrice)}</del>}</div><span className="admin-status">Active</span><div className="admin-actions"><Link href={`/dashboard/products/${product.id}/edit`} aria-label={`Edit ${product.name}`}><Pencil size={16} /></Link><button type="button" onClick={() => setConfirmDelete(product)} aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button></div></article>)}</div> : <div className="editor-card"><h2>No products found</h2><p>Add a product from the backend dashboard to see it here.</p></div>}
+    {loading ? <div className="editor-card">Loading products...</div> : visible.length ? <div className="admin-product-list">{visible.map((product) => <article className="admin-product" key={product.id}><div className="admin-thumb"><Image src={product.image} alt={product.name} fill sizes="80px" /></div><div className="admin-product-copy"><span>{product.category || 'Uncategorized'}</span><h2>{product.name}</h2><p>{product.description}</p><div className="admin-product-prices"><div><small>Website</small><strong>{priceLabel(product.websitePrice ?? product.price)}</strong></div><div><small>POS</small><strong>{priceLabel(product.posPrice)}</strong></div><div><small>Online</small><strong>{priceLabel(product.onlineOrderPrice)}</strong></div></div></div><div className="admin-product-price"><strong>{formatPrice(product.price)}</strong>{product.originalPrice && <del>{formatPrice(product.originalPrice)}</del>}</div><span className="admin-status">Active</span><div className="admin-actions"><Link href={`/dashboard/products/${product.id}/edit`} aria-label={`Edit ${product.name}`}><Pencil size={16} /></Link><button type="button" onClick={() => setConfirmDelete(product)} aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button></div></article>)}</div> : <div className="editor-card"><h2>No products found</h2><p>Add a product from the backend dashboard to see it here.</p></div>}
     {confirmDelete && <div className="modal-backdrop" role="presentation" onClick={() => setConfirmDelete(null)}><section className="confirm-modal dashboard-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-product-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setConfirmDelete(null)} aria-label="Close delete confirmation"><X size={18} /></button><span className="dashboard-eyebrow">Delete product</span><h2 id="delete-product-title">Remove {confirmDelete.name}?</h2><p>This product will be removed from the dashboard and menu.</p><div className="confirm-modal-actions"><button className="button button-outline" type="button" onClick={() => setConfirmDelete(null)}>Cancel</button><button className="button button-primary delete-confirm-button" type="button" onClick={deleteProduct}>Delete product <Trash2 size={15} /></button></div></section></div>}
   </DashboardShell>
 }

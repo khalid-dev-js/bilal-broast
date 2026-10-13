@@ -1045,11 +1045,19 @@ function LegacyHome({ onAdd }: { onAdd: (p: Product) => void }) {
 function normalizeProduct(item: any): Product {
   const category =
     typeof item.category === "object" ? item.category?.name : item.category;
+  const websitePrice = Number(item.websitePrice ?? item.price ?? 0);
+  const posPrice = Number(item.posPrice ?? websitePrice);
+  const onlineOrderPrice = Number(item.onlineOrderPrice ?? websitePrice);
+
   return {
     ...item,
     id: item._id || item.id,
     slug: item.slug || item._id || item.id,
     category: category || "Other",
+    price: websitePrice,
+    websitePrice,
+    posPrice,
+    onlineOrderPrice,
     image:
       item.image || item.imageUrl || item.images?.[0] || "/placeholder.svg",
     ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
