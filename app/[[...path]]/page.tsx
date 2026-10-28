@@ -630,7 +630,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
             <span className="hero-kicker">
               Bilal Broast <b>/</b> {slide.kicker}
             </span>
-            <h1>{slide.title}</h1>
+            <h1>Transform Your Home with Expert Renovation Solutions</h1>
             <p>{slide.copy}</p>
             <div className="hero-buttons">
               <Link href="/menu" className="button button-accent">
