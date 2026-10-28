@@ -7,7 +7,7 @@ const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-displ
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-body' })
 
 export const metadata: Metadata = {
-  title: 'Bilal Broast | Freshly made, properly crispy',
+  title: 'Bilal Broast | Authentic Pakistani Cuisine Delivered Fresh',
   description: 'Big, bold Pakistani flavor made fresh to order. Order Bilal Broast online in Karachi.',
   generator: 'v0.app',
   icons: {
