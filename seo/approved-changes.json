@@ -55,7 +55,39 @@
         "body": "Main section line: Made for cravings that come back. \u2192 Indulge in Authentic Pakistani Cuisine Delivered Fresh to Your Door.",
         "publish_held": true
       }
+    },
+    {
+      "draft_id": 66,
+      "approved_at": "2026-10-28T11:47:28.238556+00:00",
+      "agent_id": "optimizer",
+      "action_type": "seo_fix",
+      "title": "Main section line: Discover Bold Pakistani Flavors with Every Bite \u2014 Order Now!",
+      "replacements": [
+        {
+          "label": "Main section line",
+          "before": "Big flavor starts here.",
+          "after": "Discover Bold Pakistani Flavors with Every Bite \u2014 Order Now!"
+        }
+      ],
+      "note": "Exact before\u2192after text was not found in source files; recorded here so the PR still opens. Apply manually or set target path.",
+      "payload": {
+        "recommendation": "Replace main section line as proposed in chat.",
+        "reason": "Suggested in AI Team chat \u2014 approve to apply (publish held until Approve).",
+        "expected_impact": "Pending review",
+        "risk": "low",
+        "scope": "Website",
+        "source": "team_chat",
+        "preview": [
+          {
+            "label": "Main section line",
+            "before": "Big flavor starts here.",
+            "after": "Discover Bold Pakistani Flavors with Every Bite \u2014 Order Now!"
+          }
+        ],
+        "body": "Main section line: Big flavor starts here. \u2192 Discover Bold Pakistani Flavors with Every Bite \u2014 Order Now!",
+        "publish_held": true
+      }
     }
   ],
-  "updated_at": "2026-10-28T11:45:04.019637+00:00"
+  "updated_at": "2026-10-28T11:47:28.238578+00:00"
 }
