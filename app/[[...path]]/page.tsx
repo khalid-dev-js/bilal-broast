@@ -775,9 +775,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
           <div className="story-editorial-copy">
             <span className="eyebrow">Made fresh. Served hot.</span>
             <h2>
-              Big flavor
-              <br />
-              <i>starts here.</i>
+              Savor Authentic Pakistani Flavors — Your Culinary Adventure Begins Here!</i>
             </h2>
             <p>
               Bilal Broast is built around a simple idea: fresh food, bold
