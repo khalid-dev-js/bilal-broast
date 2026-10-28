@@ -1,0 +1,29 @@
+{
+  "changes": [
+    {
+      "draft_id": 46,
+      "approved_at": "2026-10-28T10:43:23.872196+00:00",
+      "agent_id": "optimizer",
+      "action_type": "seo_fix",
+      "title": "H1: Authentic Pakistani Cuisine Delivered Fresh",
+      "payload": {
+        "recommendation": "Replace h1 as proposed in chat.",
+        "reason": "Suggested in AI Team chat \u2014 approve to record (apply/publish on hold).",
+        "expected_impact": "Pending review",
+        "risk": "low",
+        "scope": "Website",
+        "source": "team_chat",
+        "preview": [
+          {
+            "label": "H1",
+            "before": "Freshly made, properly crispy",
+            "after": "Authentic Pakistani Cuisine Delivered Fresh"
+          }
+        ],
+        "body": "H1: Freshly made, properly crispy \u2192 Authentic Pakistani Cuisine Delivered Fresh",
+        "publish_held": true
+      }
+    }
+  ],
+  "updated_at": "2026-10-28T10:43:26.224298+00:00"
+}
