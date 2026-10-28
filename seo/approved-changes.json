@@ -23,7 +23,39 @@
         "body": "H1: Freshly made, properly crispy \u2192 Authentic Pakistani Cuisine Delivered Fresh",
         "publish_held": true
       }
+    },
+    {
+      "draft_id": 65,
+      "approved_at": "2026-10-28T11:45:04.019614+00:00",
+      "agent_id": "optimizer",
+      "action_type": "seo_fix",
+      "title": "Main section line: Indulge in Authentic Pakistani Cuisine Delivered Fresh to Your Door.",
+      "replacements": [
+        {
+          "label": "Main section line",
+          "before": "Made for cravings that come back.",
+          "after": "Indulge in Authentic Pakistani Cuisine Delivered Fresh to Your Door."
+        }
+      ],
+      "note": "Exact before\u2192after text was not found in source files; recorded here so the PR still opens. Apply manually or set target path.",
+      "payload": {
+        "recommendation": "Replace main section line as proposed in chat.",
+        "reason": "Suggested in AI Team chat \u2014 approve to apply (publish held until Approve).",
+        "expected_impact": "Pending review",
+        "risk": "low",
+        "scope": "Website",
+        "source": "team_chat",
+        "preview": [
+          {
+            "label": "Main section line",
+            "before": "Made for cravings that come back.",
+            "after": "Indulge in Authentic Pakistani Cuisine Delivered Fresh to Your Door."
+          }
+        ],
+        "body": "Main section line: Made for cravings that come back. \u2192 Indulge in Authentic Pakistani Cuisine Delivered Fresh to Your Door.",
+        "publish_held": true
+      }
     }
   ],
-  "updated_at": "2026-10-28T10:43:26.224298+00:00"
+  "updated_at": "2026-10-28T11:45:04.019637+00:00"
 }
