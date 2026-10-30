@@ -672,12 +672,7 @@ function Home({ onAdd }: { onAdd: (p: Product) => void }) {
             <div>
               <span className="eyebrow">Choose your mood</span>
               <h2>
-                What are you <i>craving?</i>
-              </h2>
-            </div>
-            <p>
-              From the first crunch to the last sip, pick your kind of
-              delicious.
+                WHAT ARE YOU CRAVING? Discover your perfect meal! From crispy chicken to juicy burgers, indulge in a delightful selection of bold flavors that satisfy every craving. Explore our mouthwatering menu and treat yourself to a delicious experience.
             </p>
           </div>
           <div className="craving-grid">
